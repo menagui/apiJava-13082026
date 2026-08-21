@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 
 @RestController
@@ -23,29 +27,35 @@ public class UsuarioController {
 
 	//adicionar usuario via POST
     @PostMapping("/usuarios")
-    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
+    public ResponseEntity<UsuarioResponseDTO> criarUsuario(@Valid @RequestBody UsuarioRequestDTO usuarioDTO) {
 
-        Usuario usuarioCriado = usuarioService.criarUsuario(usuario);
+        UsuarioResponseDTO usuarioCriado = usuarioService.criarUsuario(usuarioDTO);
 
         return ResponseEntity.status(201).body(usuarioCriado);
     }
     
     //listar usuarios
     @GetMapping("/usuarios")
-    public ResponseEntity<List<Usuario>> listarUsuarios() {
+    public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
 
-        List<Usuario> usuarios = usuarioService.listarUsuarios();
+        List<UsuarioResponseDTO> usuarios = usuarioService.listarUsuarios();
 
         return ResponseEntity.ok(usuarios);
     }
     
     //consultar usuario
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> buscarUsuario(@PathVariable int id) {
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuario(@PathVariable int id) {
 
-        Usuario usuario = usuarioService.buscarUsuario(id);
+        UsuarioResponseDTO usuario = usuarioService.buscarUsuario(id);
 
         return ResponseEntity.ok(usuario);
+    }
+    
+    //Consultar usuario por nome
+    @GetMapping("/usuarios/buscar")
+    public List<UsuarioResponseDTO> buscarPorNome(@RequestParam String nome) {
+        return usuarioService.buscarPorNome(nome);
     }
     
     
@@ -58,9 +68,9 @@ public class UsuarioController {
     }
     
     @PutMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable int id,  @RequestBody Usuario usuarioAtualizado) {
+    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario(@PathVariable int id,  @Valid @RequestBody UsuarioRequestDTO usuarioAtualizadoDTO) {
 
-        Usuario usuario = usuarioService.atualizarUsuario(id, usuarioAtualizado);
+        UsuarioResponseDTO usuario = usuarioService.atualizarUsuario(id, usuarioAtualizadoDTO);
 
         return ResponseEntity.ok(usuario);
     }

@@ -1,5 +1,6 @@
 package com.guilherme.api13_08_2026;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,47 +9,73 @@ import org.springframework.stereotype.Service;
 public class UsuarioService {
 
 	private final UsuarioRepository usuarioRepository;
+	private final UsuarioMapper usuarioMapper;
 
-    
-	public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+	public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
+
+	    this.usuarioRepository = usuarioRepository;
+	    this.usuarioMapper = usuarioMapper;
+	}
 	
-	public Usuario criarUsuario(Usuario usuario) {
-	    return usuarioRepository.salvar(usuario);
+	public UsuarioResponseDTO criarUsuario(UsuarioRequestDTO usuarioDTO) {
+		
+		Usuario usuario = usuarioMapper.paraEntity(usuarioDTO);
+		Usuario usuarioNovo = usuarioRepository.save(usuario);
+		 
+	    return usuarioMapper.paraResponseDTO(usuarioNovo);
 	}
     
-	public List<Usuario> listarUsuarios() {
-	    return usuarioRepository.buscarTodos();
+	public List<UsuarioResponseDTO> listarUsuarios() {
+	    
+		List<Usuario> usuarios = usuarioRepository.findAll();
+		
+		return usuarios
+				.stream()
+				.map(usuario -> usuarioMapper.paraResponseDTO(usuario))
+				.toList();
+	    
 	}
     
-	public Usuario buscarUsuario(int id) {
+	public UsuarioResponseDTO buscarUsuario(int id) {
 
-	    Usuario usuario = usuarioRepository.buscarPorId(id);
-
-	    if (usuario == null) {
-	        throw new UsuarioNaoEncontradoException();
-	    }
-
-	    return usuario;
+		 Usuario usuario = buscarEntidadePorId(id);
+		
+		
+		return usuarioMapper.paraResponseDTO(usuario);
+	}
+	
+	public List<UsuarioResponseDTO> buscarPorNome(String nome) {
+	    return 
+	    		usuarioRepository
+	    		.findByNome(nome)
+	    		.stream()
+	    		.map(usuario -> usuarioMapper.paraResponseDTO(usuario))
+	    		.toList();
 	}
     
 	public void deletarUsuario(int id) {
-	    boolean deletou = usuarioRepository.deletar(id);
+	    Usuario usuario = buscarEntidadePorId(id);
 	    
-	    if (!deletou) {
-	    	throw new UsuarioNaoEncontradoException();
-	    }
+	    usuarioRepository.delete(usuario);
 	    
 	}
     
-    public Usuario atualizarUsuario(int id, Usuario usuarioAtualizado) {
-        Usuario usuario = usuarioRepository.atualizar(id, usuarioAtualizado);
+    public UsuarioResponseDTO atualizarUsuario(int id, UsuarioRequestDTO usuarioAtualizadoDTO) {
         
-        if (usuario == null) {
-	        throw new UsuarioNaoEncontradoException();
-	    }
-
-	    return usuario;
+    	Usuario usuario = buscarEntidadePorId(id);
+        
+        
+    	usuarioMapper.atualizarEntity(usuarioAtualizadoDTO, usuario);
+        
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+  
+        return usuarioMapper.paraResponseDTO(usuarioAtualizado);
+    }
+    
+    
+    private Usuario buscarEntidadePorId(int id) {
+        return usuarioRepository
+                .findById(id)
+                .orElseThrow(UsuarioNaoEncontradoException::new);
     }
 }
