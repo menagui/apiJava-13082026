@@ -18,11 +18,14 @@ import org.springframework.http.ResponseEntity;
 @RestController
 public class UsuarioController {
 
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
+    private final PokemonService pokemonService;
 
     
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, PokemonService pokemonService
+    ) {
 		this.usuarioService = usuarioService;
+        this.pokemonService = pokemonService;
 	}
 
 	//adicionar usuario via POST
@@ -50,6 +53,19 @@ public class UsuarioController {
         UsuarioResponseDTO usuario = usuarioService.buscarUsuario(id);
 
         return ResponseEntity.ok(usuario);
+    }
+
+    @GetMapping("/usuarios/{id}/pokemons")
+    public ResponseEntity<List<PokemonResponseDTO>> buscarPokemonsUsuario(
+            @PathVariable int id
+    ) {
+
+        usuarioService.buscarUsuario(id);
+
+        List<PokemonResponseDTO> pokemons =
+                pokemonService.buscarPorTreinador(id);
+
+        return ResponseEntity.ok(pokemons);
     }
     
     //Consultar usuario por nome
